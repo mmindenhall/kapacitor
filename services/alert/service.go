@@ -92,7 +92,7 @@ type Service struct {
 		Handler(kafka.HandlerConfig, ...keyvalue.T) (alert.Handler, error)
 	}
 	MQTTService interface {
-		Handler(mqtt.HandlerConfig, ...keyvalue.T) alert.Handler
+		Handler(mqtt.HandlerConfig, ...keyvalue.T) (alert.Handler, error)
 	}
 	OpsGenieService interface {
 		Handler(opsgenie.HandlerConfig, ...keyvalue.T) alert.Handler
@@ -829,7 +829,10 @@ func (s *Service) createHandlerFromSpec(spec HandlerSpec) (handler, error) {
 		if err != nil {
 			return handler{}, err
 		}
-		h = s.MQTTService.Handler(c, ctx...)
+		h, err = s.MQTTService.Handler(c, ctx...)
+		if err != nil {
+			return handler{}, err
+		}
 		h = newExternalHandler(h)
 	case "opsgenie":
 		c := opsgenie.HandlerConfig{}

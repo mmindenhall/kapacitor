@@ -58,6 +58,7 @@ import (
 	"github.com/influxdata/kapacitor/services/udf"
 	"github.com/influxdata/kapacitor/services/udp"
 	"github.com/influxdata/kapacitor/services/victorops"
+	"github.com/influxdata/kapacitor/tlsconfig"
 	"github.com/pkg/errors"
 
 	"github.com/influxdata/influxdb/services/collectd"
@@ -76,6 +77,7 @@ type Config struct {
 	InfluxDB       []influxdb.Config `toml:"influxdb" override:"influxdb,element-key=name"`
 	Logging        diagnostic.Config `toml:"logging"`
 	ConfigOverride config.Config     `toml:"config-override"`
+	TLS            tlsconfig.Config  `toml:"tls"`
 
 	// Input services
 	Graphite []graphite.Config `toml:"graphite"`
@@ -149,6 +151,7 @@ func NewConfig() *Config {
 	c.InfluxDB = []influxdb.Config{influxdb.NewConfig()}
 	c.Logging = diagnostic.NewConfig()
 	c.ConfigOverride = config.NewConfig()
+	c.TLS = tlsconfig.NewConfig()
 
 	c.Collectd = collectd.NewConfig()
 	c.OpenTSDB = opentsdb.NewConfig()
@@ -224,6 +227,9 @@ func (c *Config) Validate() error {
 	}
 	if err := c.Task.Validate(); err != nil {
 		return errors.Wrap(err, "task")
+	}
+	if err := c.TLS.Validate(); err != nil {
+		return errors.Wrap(err, "tls")
 	}
 	if err := c.Load.Validate(); err != nil {
 		return err
